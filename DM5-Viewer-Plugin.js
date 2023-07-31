@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         DM5-Viewer-Plugin
-// @version      0.1
+// @version      0.2
 // @description  add some in DM5 View Mode
 // @author       sero
 // @homepage     https://sero.idv.tw
 // @include      /^http(s)*:\/\/([^\/]*\.)?(dm5|dm9){1}\.(cn|com|net){1}\/m(\d)+(-p\d+)*(\/)*$/
 // @icon         https://www.google.com/s2/favicons?domain=dm5.com
 // @grant        none
+// @downloadURL  https://github.com/serotw/tampermonkey-script/raw/main/DM5-Viewer-Plugin.js
 // ==/UserScript==
 
 (function(win) {
