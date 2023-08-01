@@ -31,7 +31,7 @@
 		return isString(arguments[0]) && arguments[0].trim()!=='';
 	}
 	function isArray() {
-		return type(arguments[0])==='array';
+		return isObject(arguments[0]) && arguments[0] instanceof Array;
 	}
 	function isArrays() {
 		return isArray(arguments[0]) && arguments[0].length;
