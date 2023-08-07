@@ -8,10 +8,10 @@
 // @include      /^http(s)*:\/\/([^\/]*\.)?(dm5|dm9){1}\.(cn|com|net){1}\/(manhua-([^\/])+|m(\d)+(-p\d+)*){1}(\/)*$/
 // @icon         https://www.google.com/s2/favicons?domain=dm5.com
 // @grant        none
-// @downloadURL  https://github.com/serotw/tampermonkey-script/raw/main/DM5-Viewer-Plugin.js
+// @downloadURL  https://github.com/serotw/tampermonkey-script/raw/main/DM5-Viewer-Plugin/DM5-Viewer-Plugin.js
 // ==/UserScript==
 
-(function(win) {
+;(function(win) {
 	'use strict';
 	let $ = null;
 	let pp = console.log;
@@ -85,7 +85,7 @@
 		if(!isFunction(win.jQuery)) {
 			return;
 		}
-		$('<script>').attr({src: 'https://cdn.jsdelivr.net/gh/serotw/js@master/jQuery.plugins/jQuery.obViewer.js'}).appendTo('body');
+		$('<script>').attr({src: 'https://cdn.jsdelivr.net/gh/serotw/js@main/jQuery.plugins/jQuery.obViewer.min.js'}).appendTo('body');
 	}
 	const plugin = function() {
 		return new plugin.fn.init();
