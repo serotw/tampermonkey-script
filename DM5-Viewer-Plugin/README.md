@@ -15,7 +15,7 @@
 
 ### 安裝方法
 
-> 確認使用的瀏覽器已經安裝使用者腳本管理套件之後後點擊[這裡](https://github.com/serotw/tampermonkey-script/raw/main/DM5-Viewer-Plugin/DM5-Viewer-Plugin.min.user.js)。
+> 確認使用的瀏覽器已經安裝使用者腳本管理套件之後點擊[這裡](https://github.com/serotw/tampermonkey-script/raw/main/DM5-Viewer-Plugin/DM5-Viewer-Plugin.min.user.js)。
 
 | 瀏覽器  | 使用者腳本管理套件  |
 | -------- | ----------  |
