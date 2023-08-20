@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         DM5-Viewer-Plugin
 // @namespace    http://sero.idv.tw/
-// @version      0.3
+// @version      0.4
 // @description  add some in DM5 View Mode
 // @author       sero
 // @homepage     http://git.sero.idv.tw
 // @include      /^http(s)*:\/\/([^\/]*\.)?(dm5|dm9){1}\.(cn|com|net){1}\/(manhua-([^\/])+|m(\d)+(-p\d+)*){1}(\/)*$/
 // @icon         https://www.google.com/s2/favicons?domain=dm5.com
 // @grant        none
-// @downloadURL  https://github.com/serotw/tampermonkey-script/raw/main/DM5-Viewer-Plugin/DM5-Viewer-Plugin.js
+// @downloadURL  https://github.com/serotw/tampermonkey-script/raw/main/DM5-Viewer-Plugin/DM5-Viewer-Plugin.user.js
 // ==/UserScript==
 
 ;(function(win) {
@@ -16,35 +16,19 @@
 	let $ = null;
 	let pp = console.log;
 	const source = 'https://cdn.staticfile.org/jquery/3.5.0/jquery.min.js';
-	function type() {
-		return arguments[0] && typeof arguments[0];
-	}
+	function type() {return arguments[0] && typeof arguments[0];}
+	function isString() {return type(arguments[0])==='string';}
+	function isStrings() {return isString(arguments[0]) && arguments[0].trim()!=='';}
+	function isArray() {return isObject(arguments[0]) && arguments[0] instanceof Array;}
+	function isArrays() {return isArray(arguments[0]) && arguments[0].length;}
+	function isObject() {return type(arguments[0])==='object';}
+	function isFunction() {return type(arguments[0])==='function';}
+	function isNull() {return !(arguments[0]!=null && arguments[0]!=undefined);}
 	function isJQuery() {
 		if(!arguments[0] || type(arguments[0])!=='object') {
 			return false;
 		}
 		return 'jquery' in arguments[0] && arguments[0].length;
-	}
-	function isString() {
-		return type(arguments[0])==='string';
-	}
-	function isStrings() {
-		return isString(arguments[0]) && arguments[0].trim()!=='';
-	}
-	function isArray() {
-		return isObject(arguments[0]) && arguments[0] instanceof Array;
-	}
-	function isArrays() {
-		return isArray(arguments[0]) && arguments[0].length;
-	}
-	function isObject() {
-		return type(arguments[0])==='object';
-	}
-	function isFunction() {
-		return type(arguments[0])==='function';
-	}
-	function isNull() {
-		return !(arguments[0]!=null && arguments[0]!=undefined);
 	}
 	function explode() {
 		let separator = arguments[0] || null;
@@ -85,13 +69,18 @@
 		if(!isFunction(win.jQuery)) {
 			return;
 		}
-		$('<script>').attr({src: 'https://cdn.jsdelivr.net/gh/serotw/js@main/jQuery.plugins/jQuery.obViewer.min.js'}).appendTo('body');
+		$('<script>').attr({src: 'https://cdn.jsdelivr.net/gh/serotw/js-code/jQuery.plugins/jQuery.obViewer/jQuery.obViewer.js'}).appendTo('body');
 	}
 	const plugin = function() {
 		return new plugin.fn.init();
 	};
 	plugin.fn = plugin.prototype = {
+		fullName: 'DM5-Viewer-Plugin',
 		constructor: plugin,
+		retryTimes: 10,
+		retryReset: function() {
+			plugin.fn.retryTimes = 10;
+		},
 		type: 'watch',
 		init: function() {
 			const self = plugin.fn.getSelf(this);
@@ -257,7 +246,9 @@
 				const callEnd = function() {
 					let selectorElement = mainElement.find('>*').eq(win.DM5_PAGE - 1)[0];
 					$('html, body').animate({scrollTop: selectorElement.offsetTop}, 150);
-					callback && callback();
+					if(isFunction(callback)) {
+						callback();
+					}
 				};
 				await $.each(new Array(win.DM5_IMAGE_COUNT), ()=> {
 					const imgElement = $('<img>').attr('data-page', page).addClass('photoswipe-image loading').appendTo(mainElement);
@@ -269,7 +260,7 @@
 					//
 						wait--;
 						if(wait==0) {
-							setTimeout(callEnd && callEnd(), 100);
+							setTimeout(callEnd, 100);
 						}
 					});
 					const options = {
@@ -365,6 +356,7 @@
 				});
 				lightbox.init();
 			}
+			$('body').css('overflow', 'auto');
 			console.clear();
 			return self;
 		},
@@ -374,33 +366,52 @@
 			if(!win.jQuery || !isFunction(win.jQuery)) {
 				incJQuery();
 				self.time.plus(name);
-				pp(implode(' ', ['run', name, self.time.show(name)]));
-				setTimeout(self.wait, 100);
-				return self;
+				self.log(name, 'incJQuery');
+				plugin.fn.retryTimes--;
+				if(self.retryTimes>0) {
+					setTimeout(self.wait, 100);
+					return self;
+				}
+				return self.error(name, 'incJQuery');
 			}
 			if(!$ || !isFunction($)) {
 				$ = win.jQuery;
 			}
+		//
 			if(!('PhotoSwipe' in win)) {
 				incPhotos();
 				self.time.plus(name);
-				pp(implode(' ', ['run', name, self.time.show(name)]));
-				setTimeout(self.wait, 100);
-				return self;
+				self.log(name, 'incPhotos');
+				plugin.fn.retryTimes--;
+				if(self.retryTimes>0) {
+					setTimeout(self.wait, 100);
+					return self;
+				}
+				return self.error(name, 'incPhotos');
 			}
+		//
 			if(!('obViewer' in $)) {
 				incViewer();
 				self.time.plus(name);
-				pp(implode(' ', ['run', name, self.time.show(name)]));
-				setTimeout(self.wait, 100);
-				return self;
+				self.log(name, 'incViewer');
+				plugin.fn.retryTimes--;
+				if(self.retryTimes>0) {
+					setTimeout(self.wait, 100);
+					return self;
+				}
+				return self.error(name, 'incViewer');
 			}
+		//
 			const toolBar = $('body>.rightToolBar');
 			if(!isJQuery(toolBar)) {
 				self.time.plus(name);
-				pp(implode(' ', ['run', name, self.time.show(name)]));
-				setTimeout(self.wait, 100);
-				return self;
+				self.log(name, 'toolBar');
+				plugin.fn.retryTimes--;
+				if(self.retryTimes>0) {
+					setTimeout(self.wait, 100);
+					return self;
+				}
+				return self.error(name, 'toolBar');
 			}
 			return self.start();
 		},
@@ -410,6 +421,26 @@
 				return self;
 			}
 			return self.listen();
+		},
+		error: function(name, type) {
+			let self = this;
+			if(name && (name!=='undefined' && name!==null)) {
+				let message = [self.fullName, 'Error:', "Can't finish the", name, type || ''];
+				message = implode(' ', message);
+				console.error(message);
+				message = null;
+			}
+			self = null;
+		},
+		log: function(name, type) {
+			let self = this;
+			if(name && (name!=='undefined' && name!==null)) {
+				let message = [self.fullName, 'run', name, type || '', self.time.show(name)];
+				message = implode(' ', message);
+				pp(message);
+				message = null;
+			}
+			self = null;
 		}
 	};
 
